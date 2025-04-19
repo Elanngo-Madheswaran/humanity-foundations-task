@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       const res = await fakeLogin(email, password);
       localStorage.setItem('token', res.token);
-      router.push('/dashboard');
+      router.push('/dashboard/setup');
     } catch (err) {
       setError(err);
     }
