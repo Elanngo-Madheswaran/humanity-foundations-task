@@ -18,7 +18,7 @@ export default function Navbar() {
       ),
     },
     {
-      href: '/ai-agent',
+      href: '/dashboard/ai-agent',
       label: 'AI Agent',
       icon: (
         <svg className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
