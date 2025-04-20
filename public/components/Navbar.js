@@ -35,12 +35,25 @@ export default function Navbar() {
         </svg>
       ),
     },
+    {
+      href: '/dashboard/campaign',
+      label: 'Campaigns',
+      icon: (
+        <svg className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1.5 11.5h-3v-1h3v1zm0-2.5h-3v-1h3v1zm0-2.5h-3V8h3v1z" />
+        </svg>
+      ),
+    },
+
   ];
 
   return (
     <nav className="mt-4">
       {navItems.map((item, idx) => {
-        const isActive = pathname === item.href;
+        // Check if pathname starts with item.href or is exactly equal to it
+        const isActive = 
+          pathname === item.href || 
+          (item.href !== '/dashboard/dashboard' && pathname.startsWith(item.href + '/'));
 
         return (
           <Link key={idx} href={item.href}>
