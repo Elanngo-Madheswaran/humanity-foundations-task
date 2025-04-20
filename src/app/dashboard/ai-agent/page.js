@@ -3,8 +3,6 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { IoMdSend } from 'react-icons/io';
 
-
-
 export default function AIAgent() {
     const [messages, setMessages] = useState([
         {
@@ -23,9 +21,19 @@ export default function AIAgent() {
         scrollToBottom();
     }, [messages]);
 
+    // Reset chat function
+    const handleReset = () => {
+        setMessages([
+            {
+                role: 'ai',
+                content: 'Welcome Back, Karim! How can I help you today?'
+            }
+        ]);
+    };
+
     // Simulate AI responses based on user messages
     const handleSendMessage = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         if (!input.trim()) return;
 
         // Add user message
@@ -49,6 +57,12 @@ export default function AIAgent() {
                 response = "That's a great way to ensure that your campaign drives real revenue! Now, how long do you want this referral campaign to run?";
             } else if (userMessage.toLowerCase().includes('month')) {
                 response = "Got it! Here's a quick summary of your campaign:\n\n• Goal: Increase sales\n• Reward: 15% discount on the next purchase\n• Condition: Reward is given when the referred person makes a purchase\n• Duration: 3 months";
+            } else if (userMessage.toLowerCase().includes('start campaign')) {
+                response = "Great! Let's get started with setting up your campaign. What would you like to name your new referral campaign?";
+            } else if (userMessage.toLowerCase().includes('view analytics')) {
+                response = "Here's a summary of your current campaigns' performance:\n\n• Total Referrals: 42\n• Conversion Rate: 18.5%\n• Revenue Generated: $2,450\n\nWhich campaign would you like to analyze in more detail?";
+            } else if (userMessage.toLowerCase().includes('ask for help')) {
+                response = "I'm here to help! What specific aspect of your marketing campaigns do you need assistance with? I can help with referral programs, email campaigns, social media, or general marketing strategy.";
             } else {
                 response = "I understand. Could you provide more details about what you're looking for in your referral campaign?";
             }
@@ -57,13 +71,24 @@ export default function AIAgent() {
         }, 1000);
     };
 
+    // Handle quick link clicks
+    const handleQuickLink = (message) => {
+        setInput(message);
+        setTimeout(() => {
+            handleSendMessage();
+        }, 100);
+    };
+
     return (
         <div className="flex flex-col h-screen bg-gray-50">
             <div className="flex items-center justify-between p-4 bg-white border-b">
                 <div className="flex items-center">
                     <h1 className="text-xl font-semibold text-gray-800">AI Agent</h1>
                 </div>
-                <button className="px-3 py-1 text-sm text-gray-600 border rounded hover:bg-gray-100">
+                <button 
+                    onClick={handleReset} 
+                    className="px-3 py-1 text-sm text-gray-600 border rounded hover:bg-gray-100"
+                >
                     Reset
                 </button>
             </div>
@@ -115,13 +140,22 @@ export default function AIAgent() {
                 <div className="mt-4">
                     <p className="text-sm font-medium text-gray-500">Quick Links</p>
                     <div className="flex mt-2">
-                        <button className="mr-2 px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700">
+                        <button 
+                            onClick={() => handleQuickLink("Start Campaign")} 
+                            className="mr-2 px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                        >
                             Start Campaign
                         </button>
-                        <button className="mr-2 px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700">
+                        <button 
+                            onClick={() => handleQuickLink("View Analytics")} 
+                            className="mr-2 px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                        >
                             View Analytics
                         </button>
-                        <button className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700">
+                        <button 
+                            onClick={() => handleQuickLink("Ask for Help")} 
+                            className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                        >
                             Ask for Help
                         </button>
                     </div>
