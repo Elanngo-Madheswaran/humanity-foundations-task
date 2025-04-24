@@ -6,35 +6,120 @@ import { useRouter } from 'next/navigation';
 
 export default function SetupBusinessPage() {
     const router = useRouter();
+    const API_BASE_URL = 'http://34.10.166.233';
     
     // Form state
     const [businessData, setBusinessData] = useState({
-        name: '',
-        email: '',
-        phone: '',
+        business_name: '',
+        business_email: '',
+        business_phno: '',
         description: '',
-        services: '',
         products: '',
         city: '',
         state: '',
-        zipCode: '',
-        companySize: '',
-        industry: ''
+        zip_code: '',
+        company_size: '',
+        industry: '',
+        business_type: 'service', // Default value
+        tone_of_communication: 'professional', // Default value
+        response_style: 'formal', // Default value
+        auto_offer_help: false,
+        user_initiated_only: false,
+        platform_setup: true
     });
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (!token) router.push('/');
+        if (!token) {
+            router.push('/');
+            return;
+        }
+        
+        // Check if we have business data in localStorage
+        const savedBusinessData = localStorage.getItem('businessOwnerData');
+        if (savedBusinessData) {
+            setBusinessData(JSON.parse(savedBusinessData));
+        }
+        
+        // Check if the user already has a business account
+        fetchBusinessOwnerData(token);
     }, [router]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setBusinessData(prev => ({ ...prev, [name]: value }));
+    const fetchBusinessOwnerData = async (token) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/create-business-owner`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    // User already has business data
+                    setBusinessData(data[0]);
+                    localStorage.setItem('businessOwnerData', JSON.stringify(data[0]));
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching business owner data:', error);
+        }
     };
 
-    const handleSubmit = (e) => {
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        const newValue = type === 'checkbox' ? checked : value;
+        setBusinessData(prev => ({ ...prev, [name]: newValue }));
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Business data submitted:', businessData);
+        
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                router.push('/');
+                return;
+            }
+            
+            // Save to localStorage regardless of API success
+            localStorage.setItem('businessOwnerData', JSON.stringify(businessData));
+            
+            // Get current user ID
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const userId = userData.id;
+            
+            if (!userId) {
+                // Continue to next page even without user ID
+                router.push('/dashboard/setup/sync-customer');
+                return;
+            }
+            
+            // Prepare data for API
+            const apiData = {
+                ...businessData,
+                user: userId
+            };
+            
+            const response = await fetch(`${API_BASE_URL}/auth/create-business-owner`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(apiData)
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Business owner created:', data);
+            } else {
+                console.error('Failed to create business owner:', await response.text());
+            }
+        } catch (error) {
+            console.error('Error submitting business data:', error);
+        }
+        
         router.push('/dashboard/setup/sync-customer');
     };
 
@@ -117,11 +202,12 @@ export default function SetupBusinessPage() {
                                     <label className="block text-sm font-medium mb-2">Business Name</label>
                                     <input 
                                         type="text"
-                                        name="name"
-                                        value={businessData.name}
+                                        name="business_name"
+                                        value={businessData.business_name}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
                                         placeholder="Enter business name"
+                                        required
                                     />
                                 </div>
                                 
@@ -129,11 +215,12 @@ export default function SetupBusinessPage() {
                                     <label className="block text-sm font-medium mb-2">Business Email</label>
                                     <input 
                                         type="email"
-                                        name="email"
-                                        value={businessData.email}
+                                        name="business_email"
+                                        value={businessData.business_email}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
-                                        placeholder="e.g., robert.lee@myemail.com"
+                                        placeholder="e.g., business@example.com"
+                                        required
                                     />
                                 </div>
                             </div>
@@ -143,42 +230,42 @@ export default function SetupBusinessPage() {
                                     <label className="block text-sm font-medium mb-2">Business Phone No.</label>
                                     <input 
                                         type="text"
-                                        name="phone"
-                                        value={businessData.phone}
+                                        name="business_phno"
+                                        value={businessData.business_phno}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
                                         placeholder="Enter phone no."
+                                        required
                                     />
                                 </div>
                                 
                                 <div>
                                     <label className="block text-sm font-medium mb-2">Industry</label>
-                                    <select 
+                                    <input
+                                        type="text"
                                         name="industry"
                                         value={businessData.industry}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
-                                    >
-                                        <option value="">Select</option>
-                                        <option value="technology">Technology</option>
-                                        <option value="healthcare">Healthcare</option>
-                                        <option value="finance">Finance</option>
-                                        <option value="retail">Retail</option>
-                                    </select>
+                                        placeholder="Enter industry"
+                                        required
+                                    />
                                 </div>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">Services</label>
-                                    <input 
-                                        type="text"
-                                        name="services"
-                                        value={businessData.services}
+                                    <label className="block text-sm font-medium mb-2">Business Type</label>
+                                    <select 
+                                        name="business_type"
+                                        value={businessData.business_type}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
-                                        placeholder="Enter services..."
-                                    />
+                                    >
+                                        <option value="product">Product</option>
+                                        <option value="service">Service</option>
+                                        <option value="both">Both</option>
+                                    </select>
                                 </div>
                                 
                                 <div>
@@ -190,69 +277,118 @@ export default function SetupBusinessPage() {
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
                                         placeholder="Enter products..."
+                                        required
                                     />
                                 </div>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">Company Size <span className="text-gray-400">(Optional)</span></label>
-                                    <select 
-                                        name="companySize"
-                                        value={businessData.companySize}
+                                    <label className="block text-sm font-medium mb-2">Company Size</label>
+                                    <input 
+                                        type="text"
+                                        name="company_size"
+                                        value={businessData.company_size}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
-                                    >
-                                        <option value="">Select</option>
-                                        <option value="1-10">1-10 employees</option>
-                                        <option value="11-50">11-50 employees</option>
-                                        <option value="51-200">51-200 employees</option>
-                                        <option value="201+">201+ employees</option>
-                                    </select>
+                                        placeholder="e.g., 1-10 employees"
+                                        required
+                                    />
                                 </div>
                                 
                                 <div>
                                     <label className="block text-sm font-medium mb-2">City</label>
-                                    <select 
+                                    <input 
+                                        type="text"
                                         name="city"
                                         value={businessData.city}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
-                                    >
-                                        <option value="">Select</option>
-                                        <option value="new-york">New York</option>
-                                        <option value="san-francisco">San Francisco</option>
-                                        <option value="chicago">Chicago</option>
-                                    </select>
+                                        placeholder="Enter city"
+                                        required
+                                    />
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-2">State</label>
-                                    <select 
+                                    <input 
+                                        type="text"
                                         name="state"
                                         value={businessData.state}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
-                                    >
-                                        <option value="">Select</option>
-                                        <option value="ny">New York</option>
-                                        <option value="ca">California</option>
-                                        <option value="il">Illinois</option>
-                                    </select>
+                                        placeholder="Enter state"
+                                        required
+                                    />
                                 </div>
                                 
                                 <div>
                                     <label className="block text-sm font-medium mb-2">Zip Code</label>
                                     <input 
                                         type="text"
-                                        name="zipCode"
-                                        value={businessData.zipCode}
+                                        name="zip_code"
+                                        value={businessData.zip_code}
                                         onChange={handleChange}
                                         className="w-full border border-gray-300 rounded p-2 text-sm"
                                         placeholder="Enter zip code"
+                                        required
                                     />
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Tone of Communication</label>
+                                    <input 
+                                        type="text"
+                                        name="tone_of_communication"
+                                        value={businessData.tone_of_communication}
+                                        onChange={handleChange}
+                                        className="w-full border border-gray-300 rounded p-2 text-sm"
+                                        placeholder="e.g., professional, friendly"
+                                        required
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Response Style</label>
+                                    <input 
+                                        type="text"
+                                        name="response_style"
+                                        value={businessData.response_style}
+                                        onChange={handleChange}
+                                        className="w-full border border-gray-300 rounded p-2 text-sm"
+                                        placeholder="e.g., formal, casual"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        id="auto_offer_help"
+                                        name="auto_offer_help"
+                                        checked={businessData.auto_offer_help}
+                                        onChange={handleChange}
+                                        className="mr-2"
+                                    />
+                                    <label htmlFor="auto_offer_help" className="text-sm">Auto Offer Help</label>
+                                </div>
+                                
+                                <div className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        id="user_initiated_only"
+                                        name="user_initiated_only"
+                                        checked={businessData.user_initiated_only}
+                                        onChange={handleChange}
+                                        className="mr-2"
+                                    />
+                                    <label htmlFor="user_initiated_only" className="text-sm">User Initiated Only</label>
                                 </div>
                             </div>
                             
