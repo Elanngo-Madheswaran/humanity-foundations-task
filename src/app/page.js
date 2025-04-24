@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { fakeLogin } from '../../lib/auth';
+// Removed fakeLogin import
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,11 +16,25 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fakeLogin(email, password);
-      localStorage.setItem('token', res.token);
+      // Real API call to /auth/login
+      const response = await fetch('http://34.10.166.233/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw errorData.message || 'Login failed';
+      }
+      
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
       router.push('/dashboard/setup');
     } catch (err) {
-      setError(err);
+      setError(typeof err === 'string' ? err : 'Failed to login. Please check your credentials.');
     }
   };
 
@@ -140,7 +154,6 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* Chatbot Button */}
       <button 
         onClick={toggleChat}
         className="fixed bottom-4 right-4 z-50  rounded-full p-3 shadow-lg hover:bg-blue-200 transition-all"

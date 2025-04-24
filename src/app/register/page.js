@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { fakeRegister } from '../../../lib/auth';
 import { FaEye } from 'react-icons/fa';
 import { IoEyeOff } from 'react-icons/io5';
 import { IoMdSend } from 'react-icons/io';
+import axios from 'axios';
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [role, setRole] = useState('client'); // Default role
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
@@ -27,12 +30,33 @@ export default function RegisterPage() {
             setError("Passwords don't match");
             return;
         }
+        
         try {
-            const res = await fakeRegister(email, password);
-            localStorage.setItem('token', res.token);
-            router.push('/dashboard');
+            // Call the register API
+            const response = await axios.post('http://34.10.166.233/auth/register', {
+                email,
+                password,
+                role: role === 'business' ? 'BusinessOwner' : 'Client', // Convert to API expected format
+                full_name: fullName,
+                phone: phone || undefined // Make phone optional
+            });
+            // If registration is successful, log the user in
+            if (response.status === 201) {
+                const loginResponse = await axios.post('http://34.10.166.233/auth/login', {
+                    email,
+                    password
+                });
+                
+                // Store tokens in localStorage
+                localStorage.setItem('accessToken', loginResponse.data.access);
+                localStorage.setItem('refreshToken', loginResponse.data.refresh);
+                
+                // Redirect to dashboard
+                router.push('/dashboard');
+            }
         } catch (err) {
-            setError(err);
+            setError(err.response?.data?.message || "Registration failed");
+            console.error(err);
         }
     };
 
@@ -129,7 +153,35 @@ export default function RegisterPage() {
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        required
                     />
+                    
+                    <input
+                        type="text"
+                        className="w-full px-4 py-2 border rounded-md"
+                        placeholder="Full Name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                    />
+                    
+                    <input
+                        type="tel"
+                        className="w-full px-4 py-2 border rounded-md"
+                        placeholder="Phone (optional)"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                    />
+                    
+                    <select
+                        className="w-full px-4 py-2 border rounded-md"
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        required
+                    >
+                        <option value="client">Client</option>
+                        <option value="business">Business</option>
+                    </select>
                     
                     <div className="relative">
                         <input
@@ -138,6 +190,7 @@ export default function RegisterPage() {
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            required
                         />
                         <button 
                             type="button"
@@ -155,6 +208,7 @@ export default function RegisterPage() {
                             placeholder="Confirm Password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
                         />
                         <button 
                             type="button"
