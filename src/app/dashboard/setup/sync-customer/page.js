@@ -15,6 +15,7 @@ export default function SyncCustomerData() {
         // If no business data is found, redirect to the business setup page
         if (!businessData) {
             router.push('/dashboard/setup/setup_business');
+            alert('Please complete your business profile before proceeding to set up AI agent rules.');
         }
     }, [router]);
 
