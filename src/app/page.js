@@ -17,7 +17,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       // Real API call to /auth/login
-      const response = await fetch('http://34.10.166.233/auth/login', {
+      const response = await fetch('/api/proxy/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

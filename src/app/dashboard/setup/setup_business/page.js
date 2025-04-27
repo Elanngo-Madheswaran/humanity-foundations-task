@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 export default function SetupBusinessPage() {
     const router = useRouter();
-    const API_BASE_URL = 'https://34.10.166.233';
+    const API_BASE_URL = '/api/proxy';
     
     // Form state
     const [businessData, setBusinessData] = useState({
@@ -47,7 +47,7 @@ export default function SetupBusinessPage() {
 
     const fetchBusinessOwnerData = async (token) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/create-business-owner`, {
+            const response = await fetch(`${API_BASE_URL}/setup-business`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

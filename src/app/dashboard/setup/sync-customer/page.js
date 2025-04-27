@@ -1,14 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-
 
 export default function SyncCustomerData() {
     const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState(null);
     const router = useRouter();
+    
+    // Check for business data on component mount
+    useEffect(() => {
+        const businessData = localStorage.getItem('businessOwnerData');
+        
+        // If no business data is found, redirect to the business setup page
+        if (!businessData) {
+            router.push('/dashboard/setup/setup-business');
+        }
+    }, [router]);
 
     const handleDragEnter = (e) => {
         e.preventDefault();
@@ -106,7 +114,6 @@ export default function SyncCustomerData() {
             </div>
             
             <div className='w-full flex justify-center'>
-
                 <button
                     onClick={handleNext}
                     className="w-50 mt-1.5 bg-gradient-to-r from-blue-600/80 to-blue-200  text-white py-1.5 rounded-md hover:bg-blue-600"
