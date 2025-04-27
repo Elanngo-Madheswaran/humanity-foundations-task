@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 export default function SetupBusinessPage() {
     const router = useRouter();
-    const API_BASE_URL = 'http://34.10.166.233';
+    const API_BASE_URL = 'https://34.10.166.233';
     
     // Form state
     const [businessData, setBusinessData] = useState({
