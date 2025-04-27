@@ -20,7 +20,7 @@ export default function SetupBusinessPage() {
         zip_code: '',
         company_size: '',
         industry: '',
-        business_type: 'service', // Default value
+        business_type: 'service', 
         tone_of_communication: 'professional', // Default value
         response_style: 'formal', // Default value
         auto_offer_help: false,
