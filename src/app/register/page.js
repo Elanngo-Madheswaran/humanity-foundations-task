@@ -33,7 +33,7 @@ export default function RegisterPage() {
         
         try {
             // Call the register API
-            const response = await axios.post('http://34.10.166.233/auth/register', {
+            const response = await axios.post('https://34.10.166.233/auth/register', {
                 email,
                 password,
                 role: role === 'business' ? 'BusinessOwner' : 'Client', // Convert to API expected format
@@ -42,7 +42,7 @@ export default function RegisterPage() {
             });
             // If registration is successful, log the user in
             if (response.status === 201) {
-                const loginResponse = await axios.post('http://34.10.166.233/auth/login', {
+                const loginResponse = await axios.post('https://34.10.166.233/auth/login', {
                     email,
                     password
                 });
