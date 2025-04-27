@@ -17,6 +17,14 @@ export default function AIAgentRulesPage() {
         // For now, we'll just navigate to the next step
         router.push('/dashboard/setup/first-campaign');
     };
+     useEffect(() => {
+            const businessData = localStorage.getItem('businessOwnerData');
+            
+            // If no business data is found, redirect to the business setup page
+            if (!businessData) {
+                router.push('/dashboard/setup/setup_business');
+            }
+        }, [router]);
 
     return (
         <div className="bg-white p-6 rounded-md shadow-sm">

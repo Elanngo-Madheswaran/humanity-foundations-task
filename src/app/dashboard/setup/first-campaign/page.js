@@ -30,6 +30,15 @@ export default function FirstCampaign() {
         }
     });
 
+     useEffect(() => {
+            const businessData = localStorage.getItem('businessOwnerData');
+            
+            // If no business data is found, redirect to the business setup page
+            if (!businessData) {
+                router.push('/dashboard/setup/setup_business');
+            }
+        }, [router]);
+
     const handleInputChange = (section, field, value) => {
         setCampaignData(prev => ({
             ...prev,
